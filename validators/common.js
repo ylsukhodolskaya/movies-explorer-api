@@ -1,5 +1,6 @@
 import { celebrator, Joi } from 'celebrate';
 import validator from 'validator';
+import { messages } from '../errors/index.js';
 
 // настраиваем celebrate один раз и потом используем везде эту функцию
 export const celebrate = celebrator(
@@ -14,5 +15,5 @@ export const schemaURL = Joi.string().custom((value, helpers) => {
   if (validator.isURL(value)) {
     return value;
   }
-  return helpers.message('Должно быть ссылкой');
+  return helpers.message(messages.app.notURL);
 });

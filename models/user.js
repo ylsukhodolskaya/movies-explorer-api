@@ -1,14 +1,15 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import { UnauthorizedError } from '../errors/index.js';
+import {
+  UnauthorizedError,
+  messages,
+} from '../errors/index.js';
 import { schemaEmail } from '../validators/users.js';
 
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    minLength: 2,
-    maxLength: 30,
-    default: 'Жак-Ив Кусто',
+    required: true,
   },
   email: {
     type: String,
@@ -16,13 +17,12 @@ const userSchema = new mongoose.Schema({
     unique: true,
     validate: {
       validator: (value) => !schemaEmail.validate(value).error,
-      message: () => 'Почта должна быть вида a@b.c',
+      message: () => messages.app.notEmail,
     },
   },
   password: {
     type: String,
     required: true,
-    minLength: 8,
     select: false,
   },
 }, {
@@ -33,13 +33,13 @@ const userSchema = new mongoose.Schema({
         .select('+password')
         .then((document) => {
           if (!document) {
-            throw new UnauthorizedError('Неправильный логин или пароль');
+            throw new UnauthorizedError(messages.user.incorrect);
           }
 
           return bcrypt.compare(password, document.password)
             .then((isSuccess) => {
               if (!isSuccess) {
-                throw new UnauthorizedError('Неправильный логин или пароль');
+                throw new UnauthorizedError(messages.user.incorrect);
               }
 
               const {

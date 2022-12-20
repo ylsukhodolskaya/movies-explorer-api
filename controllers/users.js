@@ -2,23 +2,27 @@ import { constants } from 'http2';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { User } from '../models/user.js';
-import { ConflictError, BadRequestError, NotFoundError } from '../errors/index.js';
-
-export const UniqueErrorCode = 11000;
+import {
+  ConflictError,
+  BadRequestError,
+  NotFoundError,
+  messages,
+  UniqueErrorCode,
+} from '../errors/index.js';
 
 // GET-запрос пользователя
 export const findCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (user) {
-        res.send({ data: user });
+        res.send(user);
       } else {
-        throw new NotFoundError('Пользователь не найден');
+        throw new NotFoundError(messages.user.notFound);
       }
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new BadRequestError(`Некорректные данные для пользователя. ${err.message}`));
+        next(new BadRequestError(messages.user.validation` ${err.message}`));
       } else {
         next(err);
       }
@@ -31,14 +35,19 @@ export const updateUserProfile = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { name, email }, { new: true })
     .then((user) => {
       if (user) {
-        res.send(user);
+        res.send({
+          name: user.name,
+          email: user.email,
+        });
       } else {
-        throw new NotFoundError('Пользователь не найден');
+        throw new NotFoundError(messages.user.notFound);
       }
     })
     .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
-        next(new BadRequestError(`Некорректные данные для пользователя. ${err.message}`));
+      if (err.name === 'MongoServerError') {
+        next(new ConflictError(messages.user.alreadyExist));
+      } else if (err.name === 'ValidationError' || err.name === 'CastError') {
+        next(new BadRequestError(messages.user.validation` ${err.message}`));
       } else {
         next(err);
       }
@@ -70,9 +79,9 @@ export const register = (req, res, next) => {
     })
     .catch((err) => {
       if (err.code === UniqueErrorCode) {
-        next(new ConflictError('Пользователь с такой почтой уже существует'));
+        next(new ConflictError(messages.user.alreadyExist));
       } else if (err.name === 'ValidationError') {
-        next(new BadRequestError(`Некорректные данные для пользователя. ${err.message}`));
+        next(new BadRequestError(messages.user.validation` ${err.message}`));
       } else {
         next(err);
       }

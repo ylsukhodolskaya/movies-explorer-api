@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import validator from 'validator';
+import { messages } from '../errors/index.js';
 
 const movieSchema = new mongoose.Schema({
   // страна создания фильма
@@ -19,7 +20,7 @@ const movieSchema = new mongoose.Schema({
   },
   // год выпуска фильма
   year: {
-    type: Number,
+    type: String,
     required: true,
   },
   // описание фильма
@@ -33,7 +34,7 @@ const movieSchema = new mongoose.Schema({
     required: true,
     validate: {
       validator: (value) => validator.isURL(value),
-      message: () => 'Ссылка должна быть http(s)-URL',
+      message: () => messages.app.notURL,
     },
   },
   // ссылка на трейлер фильма
@@ -42,7 +43,7 @@ const movieSchema = new mongoose.Schema({
     required: true,
     validate: {
       validator: (value) => validator.isURL(value),
-      message: () => 'Ссылка должна быть http(s)-URL',
+      message: () => messages.app.notURL,
     },
   },
   // миниатюрное изображение постера к фильму
@@ -51,7 +52,7 @@ const movieSchema = new mongoose.Schema({
     required: true,
     validate: {
       validator: (value) => validator.isURL(value),
-      message: () => 'Ссылка должна быть http(s)-URL',
+      message: () => messages.app.notURL,
     },
   },
   // _id пользователя, который сохранил фильм

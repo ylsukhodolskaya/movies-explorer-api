@@ -1,6 +1,7 @@
 import validator from 'validator';
 import { Joi, Segments } from 'celebrate';
 import { celebrate, schemaObjectId } from './common.js';
+import { messages } from '../errors/index.js';
 
 export const schemaRouteId = schemaObjectId;
 export const schemaString = Joi.string().required();
@@ -9,7 +10,7 @@ export const schemaLink = Joi.string().custom((value, helper) => {
   if (validator.isURL(value)) {
     return value;
   }
-  return helper.message('Должно быть ссылкой!');
+  return helper.message(messages.app.notURL);
 }).required();
 
 export const schemaObjectRouteId = Joi.object({
@@ -19,7 +20,7 @@ export const schemaObjectCard = Joi.object({
   country: schemaString,
   director: schemaString,
   duration: schemaNumber,
-  year: schemaNumber,
+  year: schemaString,
   description: schemaString,
   image: schemaLink,
   trailerLink: schemaLink,
